@@ -41,6 +41,8 @@ redis-cli ping   # → PONG
 
 ## STEP 2 — Seed All Organizer Data
 
+Sample Data by Judges - https://drive.google.com/drive/folders/1LBtsip0hcXfn-WTJUV5AZ-1pco4kPSPD
+
 ```powershell
 cd pricing-engine
 
