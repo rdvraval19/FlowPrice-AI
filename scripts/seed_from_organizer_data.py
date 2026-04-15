@@ -253,6 +253,14 @@ async def seed_clickstream_events(
 
         # ── Redis Stream ──────────────────────────────────────────────────
         ts = row.get("timestamp", time.time())
+        from datetime import datetime
+
+        if isinstance(ts, str):
+            try:
+                ts = datetime.fromisoformat(ts).timestamp()
+            except:
+                ts = 0
+
         ts_ms = int(ts * 1000) if ts < 1e12 else int(ts)
         price = float(row.get("price", row.get("price_shown", 0)) or 0)
 
