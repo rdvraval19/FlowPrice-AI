@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+*.db
+*.db-journal
+
+# ML models (large binary files — store in S3/DVC)
+backend/ml/models/*.pt
+backend/ml/models/*.pkl
+
+# Environment
+.env
+.env.local
+*.env
+
+# Node / Next.js
+node_modules/
+.next/
+.vercel/
+frontend/out/
+
+# Docker
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

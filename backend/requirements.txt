@@ -1,0 +1,32 @@
+# ── Core Framework ────────────────────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# ── Async HTTP / Server ───────────────────────────────────────────────────────
+httpx==0.28.0
+python-multipart==0.0.18
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+# hiredis has no Python 3.13 Windows wheel yet — pure-python redis is fine
+redis==5.2.1
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.36
+aiosqlite==0.20.0
+
+# ── Machine Learning ──────────────────────────────────────────────────────────
+scikit-learn==1.5.2
+# torch is NOT listed here — install separately after this file (see below)
+# The app runs fully without torch; it falls back to cold-start recommendations
+numpy>=1.26.4
+scipy==1.14.1
+
+# ── Observability ─────────────────────────────────────────────────────────────
+structlog==24.4.0
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest==8.3.4
+pytest-asyncio==0.24.0
+fakeredis==2.26.1

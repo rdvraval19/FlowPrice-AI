@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --font-display: "Syne", system-ui;
+  --font-body:    "DM Sans", system-ui;
+  --font-mono:    "JetBrains Mono", monospace;
+
+  /* Storefront (light) */
+  --bg-base:       #FAFAFA;
+  --bg-surface:    #FFFFFF;
+  --bg-card:       #F3F4F6;
+  --text-primary:  #0F172A;
+  --text-secondary:#475569;
+  --text-muted:    #94A3B8;
+  --border-light:  #E2E8F0;
+
+  /* Brand */
+  --indigo:       #4F46E5;
+  --indigo-light: #EEF2FF;
+  --indigo-hover: #4338CA;
+
+  /* Semantic — pricing signals */
+  --green:        #10B981;   /* Price drop / buy now */
+  --green-bg:     #ECFDF5;
+  --red:          #EF4444;   /* Price surge / FOMO */
+  --red-bg:       #FEF2F2;
+  --orange:       #F97316;   /* Urgency / scarcity */
+  --orange-bg:    #FFF7ED;
+  --purple:       #8B5CF6;   /* AI action / transparency */
+  --purple-bg:    #F5F3FF;
+
+  /* Dashboard (dark) — overridden in .dashboard-dark */
+  --dash-bg:       #111827;
+  --dash-surface:  #1F2937;
+  --dash-card:     #374151;
+  --dash-border:   #374151;
+  --dash-text:     #F9FAFB;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* Dark scrollbar for dashboard */
+.dashboard-dark ::-webkit-scrollbar-thumb { background: #374151; }
+.dashboard-dark ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+body { -webkit-font-smoothing: antialiased; }
+
+/* ── Storefront (light) ───────────────────────────────────────────────────── */
+.storefront-light {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* Skeleton shimmer — light mode */
+.skeleton {
+  background: linear-gradient(90deg, #E2E8F0 0%, #F1F5F9 40%, #E2E8F0 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* Skeleton shimmer — dark mode (dashboard) */
+.dashboard-dark .skeleton {
+  background: linear-gradient(90deg, #1F2937 0%, #374151 40%, #1F2937 80%);
+  background-size: 200% 100%;
+}
+
+/* ── Price flash animations ───────────────────────────────────────────────── */
+@keyframes flash-green {
+  0%   { background-color: rgba(16,185,129,0.15); transform: scale(1.02); }
+  100% { background-color: transparent; transform: scale(1); }
+}
+@keyframes flash-red {
+  0%   { background-color: rgba(239,68,68,0.12); transform: scale(1.02); }
+  100% { background-color: transparent; transform: scale(1); }
+}
+.animate-flash-green { animation: flash-green 0.7s ease-out forwards; }
+.animate-flash-red   { animation: flash-red   0.7s ease-out forwards; }
+
+/* ── Pulse dot ─────────────────────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.6; }
+}
+.animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* ── Card hover ─────────────────────────────────────────────────────────────── */
+.product-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.product-card:hover {
+  box-shadow: 0 8px 32px rgba(79,70,229,0.12), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: rgba(79,70,229,0.25);
+  transform: translateY(-2px);
+}
+.product-card:hover .product-image { transform: scale(1.05); }
+
+.product-image {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+/* ── Glass panel (light) ─────────────────────────────────────────────────── */
+.glass-light {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Glass panel (dark — dashboard) */
+.glass {
+  background: rgba(31,41,55,0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── AI transparency badge (purple) ────────────────────────────────────────── */
+.ai-badge {
+  background: var(--purple-bg);
+  color: var(--purple);
+  border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ai-badge:hover { background: rgba(139,92,246,0.15); }
+
+/* ── Recommendation slider ──────────────────────────────────────────────────── */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.rec-slide-in { animation: slide-in-right 0.35s cubic-bezier(0.16,1,0.3,1) forwards; }
+
+/* ── Circuit breaker badge ──────────────────────────────────────────────────── */
+.cb-badge-open   { background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; }
+.cb-badge-closed { background: #ECFDF5; color: #059669; border: 1px solid #6EE7B7; }
+
+/* ── Shimmer animation ──────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Dashboard dark mode base ────────────────────────────────────────────────── */
+.dashboard-dark {
+  background: var(--dash-bg);
+  color: var(--dash-text);
+}
