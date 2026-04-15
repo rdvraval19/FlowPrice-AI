@@ -1,131 +1,117 @@
-# ⚡ Dynamic Pricing & Personalization Engine
+# FlowPrice AI: Real-Time Dynamic Pricing & Personalization Engine
+[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/rdvraval19/FlowPrice-AI)
 
-> Real-time behavioral signal processing · Sub-200ms p99 latency · Session-aware recommendations
+FlowPrice AI is a full-stack dynamic pricing and recommendation engine designed for e-commerce platforms. It processes real-time behavioral signals to personalize user experiences, optimize pricing strategies, and drive revenue uplift, all while maintaining sub-200ms p99 latency.
 
----
+The system features a consumer-facing storefront that showcases dynamic prices with transparency explanations, and an administrative dashboard for monitoring latency, A/B tests, revenue, and system health.
 
-## Repository Structure
+## Core Features
+
+*   **Real-Time Dynamic Pricing:** Adjusts prices based on a weighted model of demand velocity, inventory scarcity, competitor data, and user segment. Includes business rule enforcement for margin floors and surge caps.
+*   **Hybrid Recommendation Engine:** Combines a session-aware GRU4Rec model (PyTorch-based) for warm sessions with contextual, popularity-based strategies for cold-start users, ensuring relevant recommendations for everyone.
+*   **High-Performance Event Ingestion:** A fully asynchronous FastAPI endpoint writes behavioral events (views, cart adds, purchases) to Redis Streams with a target server-side latency of less than 15ms.
+*   **A/B Testing Framework:** Built-in support for running, monitoring, and analyzing experiments with deterministic, hash-based user bucketing and live statistical significance calculations.
+*   **Vendor & Loyalty Platform:** A vendor-facing panel allows for the creation of discounts, coupon codes, and sponsored product placements. A points-based loyalty system rewards user activity and provides tiered benefits.
+*   **Administrative Dashboard:** A Next.js dashboard provides a real-time view of system health, including p99 latency gauges, live event streams, A/B test results, demand heatmaps, and fairness audits.
+*   **System Safeguards:** A Redis-backed circuit breaker prevents catastrophic pricing errors by detecting anomalies and halting dynamic pricing if thresholds are breached.
+
+## Technology Stack
+
+| Area          | Technologies                                                                                             |
+|---------------|----------------------------------------------------------------------------------------------------------|
+| **Backend**   | **Python 3.11+**, **FastAPI**, **Redis** (Streams, Cache, Feature Store), **SQLAlchemy**, **scikit-learn** |
+| **Frontend**  | **Next.js 14** (App Router), **TypeScript**, **Tailwind CSS**, **Zustand**, **Recharts**, **Framer Motion**    |
+| **Infra**     | **Docker**, **Docker Compose**                                                                           |
+
+## Getting Started
+
+The fastest way to run the full application stack (backend, frontend, Redis) is with Docker Compose.
+
+### Prerequisites
+
+*   Docker & Docker Compose
+*   Python 3.11+ (for running scripts)
+*   Node.js 18+
+
+### 1. Run with Docker
+
+From the root of the repository, start all services:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml up --build
+```
+
+### 2. Seed Initial Data
+
+To populate the dashboard with realistic A/B test data, run the seeder script. This command injects pre-calculated, statistically significant results directly into Redis without needing the large `clickstream.parquet` file.
+
+```bash
+# In a new terminal, from the repository root
+python scripts/seed_from_organizer_data.py --ab-seed-only
+```
+
+### 3. Access the Application
+
+*   **Persona Login:** [http://localhost:3000](http://localhost:3000)
+*   **Storefront:** [http://localhost:3000/storefront](http://localhost:3000/storefront)
+*   **Admin Dashboard:** [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+*   **Backend API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+
+## Project Structure
+
+The repository is structured as a monorepo with distinct `frontend`, `backend`, and `infra` directories.
 
 ```
-pricing-engine/
-├── frontend/                          # Next.js 14 App Router + Tailwind + Framer Motion
+flowprice-ai/
+├── frontend/                          # Next.js 14 App Router + Tailwind CSS
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── storefront/            # Consumer-facing e-commerce UI
-│   │   │   │   ├── page.tsx           # Product catalog with dynamic pricing
-│   │   │   │   ├── product/[id]/      # PDP with price explanation badges
-│   │   │   │   └── cart/              # Cart with real-time price updates
-│   │   │   ├── dashboard/             # Admin/Judge's dashboard
-│   │   │   │   ├── page.tsx           # Overview: latency, revenue, A/B status
-│   │   │   │   ├── experiments/       # A/B test management & live results
-│   │   │   │   ├── pricing/           # Pricing rule editor & audit log
-│   │   │   │   └── fairness/          # Fairness audit visualization
-│   │   │   └── api/                   # Next.js API routes (proxy layer)
+│   │   │   ├── dashboard/             # Admin/Judge's monitoring dashboard
+│   │   │   └── vendor/                # Vendor panel for managing promotions
 │   │   ├── components/
-│   │   │   ├── ui/                    # Primitives: Button, Badge, Tooltip, Skeleton
-│   │   │   ├── storefront/
-│   │   │   │   ├── ProductCard.tsx    # Card with dynamic price + transparency badge
-│   │   │   │   ├── PriceDisplay.tsx   # Animated price with explanation tooltip
-│   │   │   │   ├── RecommendationRow.tsx
-│   │   │   │   └── CartDrawer.tsx
-│   │   │   └── dashboard/
-│   │   │       ├── LatencyGauge.tsx   # Real-time p50/p95/p99 gauges
-│   │   │       ├── ABTestChart.tsx    # Conversion / AOV comparison charts
-│   │   │       ├── EventStream.tsx    # Live clickstream feed
-│   │   │       └── FairnessRadar.tsx  # Demographic fairness radar chart
-│   │   ├── lib/
-│   │   │   ├── api-client.ts          # Typed fetch wrapper with retry logic
-│   │   │   ├── event-tracker.ts       # Behavioral event emitter (debounced)
-│   │   │   └── constants.ts
-│   │   ├── hooks/
-│   │   │   ├── useDynamicPrice.ts     # SSE hook for live price updates
-│   │   │   ├── useRecommendations.ts  # Recommendation fetcher with skeleton state
-│   │   │   └── useEventTracker.ts     # Auto-fires clickstream events
-│   │   ├── store/
-│   │   │   └── session.ts             # Zustand: session ID, cart, user segment
-│   │   └── types/
-│   │       └── index.ts               # Shared TypeScript interfaces
-│   ├── tailwind.config.ts
-│   ├── next.config.ts
-│   └── package.json
+│   │   │   ├── storefront/            # Product cards, price displays, recommendations
+│   │   │   └── dashboard/             # Latency gauges, A/B charts, live streams
+│   │   ├── hooks/                     # Custom hooks for pricing, events, etc.
+│   │   └── store/                     # Zustand for global session management
 │
-├── backend/                           # FastAPI — fully async Python 3.11+
+├── backend/                           # FastAPI (async Python 3.11+)
 │   ├── app/
-│   │   ├── main.py                    # FastAPI app factory, CORS, middleware mounts
+│   │   ├── main.py                    # FastAPI app factory and middleware
 │   │   ├── api/v1/
-│   │   │   ├── router.py              # Aggregates all v1 endpoint routers
 │   │   │   └── endpoints/
-│   │   │       ├── events.py          # ← POST /events/ingest  (Redis Streams)
-│   │   │       ├── pricing.py         # GET  /pricing/{product_id}
-│   │   │       ├── recommendations.py # GET  /recommendations/{session_id}
-│   │   │       ├── experiments.py     # CRUD /experiments + metrics read
-│   │   │       ├── stream.py          # GET  /stream/prices  (SSE)
-│   │   │       └── health.py          # GET  /health  (latency probe)
+│   │   │       ├── events.py          # Real-time event ingestion (Redis Streams)
+│   │   │       ├── pricing.py         # Dynamic pricing endpoint
+│   │   │       ├── recommendations.py # Personalization endpoint
+│   │   │       ├── experiments.py     # A/B testing management
+│   │   │       └── evaluation.py      # Endpoints for hackathon evaluation criteria
 │   │   ├── core/
-│   │   │   ├── config.py              # Pydantic Settings — env-driven
-│   │   │   ├── redis_client.py        # Async Redis pool + Stream helpers
-│   │   │   ├── feature_store.py       # Redis-backed real-time feature store
-│   │   │   └── security.py            # API key / JWT middleware
-│   │   ├── models/
-│   │   │   ├── event.py               # SQLModel: raw event persistence
-│   │   │   ├── product.py             # Product + inventory
-│   │   │   └── experiment.py          # A/B experiment + variant assignments
-│   │   ├── schemas/
-│   │   │   ├── event.py               # Pydantic: ClickstreamEvent, EventBatch
-│   │   │   ├── pricing.py             # PricingRequest, PricingResponse
-│   │   │   └── recommendation.py      # RecommendationResponse
+│   │   │   ├── redis_client.py        # Redis connection pool and stream helpers
+│   │   │   └── config.py              # Pydantic settings for configuration
 │   │   ├── services/
-│   │   │   ├── events/
-│   │   │   │   ├── ingestion.py       # Stream writer + feature computation trigger
-│   │   │   │   ├── consumer.py        # Background consumer group worker
-│   │   │   │   └── feature_compute.py # Session score, affinity, intent probability
 │   │   │   ├── pricing/
-│   │   │   │   ├── engine.py          # Demand-responsive pricing orchestrator
-│   │   │   │   ├── demand_model.py    # Sklearn velocity + elasticity model
-│   │   │   │   ├── business_rules.py  # Margin floors, discount caps, parity
-│   │   │   │   └── explainer.py       # Price change reason generator
+│   │   │   │   ├── engine.py          # Orchestrates pricing logic
+│   │   │   │   ├── demand_model.py    # Computes scores from velocity & scarcity
+│   │   │   │   ├── business_rules.py  # Enforces margin floors and surge caps
+│   │   │   │   └── circuit_breaker.py # Safety valve to prevent extreme prices
 │   │   │   ├── recommendations/
-│   │   │   │   ├── engine.py          # Hybrid CF + session-based orchestrator
-│   │   │   │   ├── collaborative.py   # Matrix factorization (sklearn / scipy)
-│   │   │   │   ├── session_model.py   # GRU4Rec PyTorch model + inference
-│   │   │   │   └── cold_start.py      # Context-signal fallback for new users
-│   │   │   └── experiments/
-│   │   │       ├── framework.py       # Bucket assignment + metric tracking
-│   │   │       └── metrics.py         # Conversion rate, AOV, RPS calculator
-│   │   ├── ml/
-│   │   │   ├── pricing/
-│   │   │   │   └── train_demand.py    # Offline demand elasticity trainer
-│   │   │   └── recommendations/
-│   │   │       ├── train_cf.py        # Collaborative filtering trainer
-│   │   │       └── train_gru4rec.py   # GRU4Rec session model trainer
-│   │   ├── db/
-│   │   │   ├── session.py             # Async SQLAlchemy engine + session factory
-│   │   │   └── init_db.py             # Schema creation + seed data
-│   │   └── middleware/
-│   │       ├── latency.py             # X-Response-Time header + p99 tracking
-│   │       └── ab_router.py           # Experiment bucket injection per request
-│   └── tests/
-│       ├── unit/
-│       │   ├── test_pricing_engine.py
-│       │   ├── test_business_rules.py
-│       │   └── test_feature_compute.py
-│       └── integration/
-│           ├── test_event_ingestion.py
-│           └── test_recommendations.py
+│   │   │   │   ├── engine.py          # Hybrid recommendation orchestrator
+│   │   │   │   └── session_model.py   # GRU4Rec model inference
+│   │   │   └── events/
+│   │   │       ├── ingestion.py       # Handles event validation and streaming
+│   │   │       └── feature_compute.py # Calculates session scores and intent
+│   │   └── tests/
+│   │       ├── unit/                  # Tests for individual services
+│   │       └── integration/           # Tests for API endpoints and data flow
 │
 ├── infra/
-│   ├── redis/
-│   │   └── redis.conf                 # Stream maxlen, persistence, ACL config
-│   └── docker/
-│       ├── Dockerfile.backend
-│       ├── Dockerfile.frontend
-│       └── docker-compose.yml         # Full stack: backend + frontend + Redis
+│   ├── docker/
+│   │   ├── Dockerfile.backend
+│   │   ├── Dockerfile.frontend
+│   │   └── docker-compose.yml         # Full stack definition for all services
+│   └── redis/
+│       └── redis.conf                 # Redis configuration for streams and memory
 │
-├── scripts/
-│   ├── seed_products.py               # Populate catalog + pricing seeds
-│   ├── simulate_traffic.py            # Load-test clickstream generator
-│   └── run_fairness_audit.py          # Demographic parity checker
-│
-└── .github/workflows/
-    └── ci.yml                         # Lint + test + latency regression gate
-```
+└── scripts/
+    ├── seed_from_organizer_data.py    # Populates Redis from Parquet datasets
+    └── simulate_traffic.py            # Generates load to test latency and demand
